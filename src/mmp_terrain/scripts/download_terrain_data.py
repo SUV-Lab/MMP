@@ -17,9 +17,9 @@ TERRAIN_DATA = {
     'korea': {
         'filename': 'korea.tif',
         'description': 'Korean Peninsula - Full coverage (low resolution)',
-        'url': 'https://github.com/YOUR_USERNAME/MMP-terrain-data/releases/download/v1.0/korea.tif',
+        'url': 'https://github.com/limgyeonghun/MMP/releases/download/terrain-data-v1.0/korea.tif',
         # 실제 파일의 SHA256 해시값 (무결성 검증용)
-        'sha256': None,  # TODO: 실제 업로드 후 해시값 추가
+        'sha256': 'ad72a1c0c92c2adca3da39a21888fdfeb14bc5f271fb55a569a85df18a2fb5dc',
         'size_mb': 176,
     },
     # 향후 추가 가능한 데이터셋 예시:
