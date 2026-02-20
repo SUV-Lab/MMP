@@ -1,0 +1,12 @@
+build/
+install/
+log/
+src/map/
+*.o
+*.so
+*.pyc
+__pycache__/
+.vscode/
+
+# Terrain data (managed by Git LFS or download script)
+src/mmp_terrain/data/*.tif
