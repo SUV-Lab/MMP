@@ -35,14 +35,11 @@ class TerrainPublisher(Node):
 
     def load_tif(self):
         """TIF -> GridMap msg"""
-        self.declare_parameter('tif_path', '')
-        tif_path_param = self.get_parameter('tif_path').get_parameter_value().string_value
+        self.declare_parameter('world', 'dokdo')
+        world_name = self.get_parameter('world').get_parameter_value().string_value
 
-        if tif_path_param:
-            tif_path = tif_path_param
-        else:
-            pkg_share = get_package_share_directory('mmp_terrain')
-            tif_path = os.path.join(pkg_share, 'data', 'korea.tif')
+        pkg_share = get_package_share_directory('mmp_terrain')
+        tif_path = os.path.join(pkg_share, 'data', f'{world_name}.tif')
 
         if not os.path.exists(tif_path):
             error_msg = f"""

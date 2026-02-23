@@ -10,6 +10,9 @@ __pycache__/
 # Terrain data (managed by Git LFS or download script)
 src/mmp_terrain/data/*.tif
 
+# But include dokdo.tif as default
+!src/mmp_terrain/data/dokdo.tif
+
 # Map extraction scripts - keep scripts, ignore TIF files
 src/map/*.tif
 src/map/extra/

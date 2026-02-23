@@ -52,15 +52,22 @@ git lfs pull
 ### Run via Launch File
 
 ```bash
+# Default world (dokdo)
 ros2 launch mmp_visualization mmp.launch.py
+
+# Specify different world
+ros2 launch mmp_visualization mmp.launch.py world:=korea
+ros2 launch mmp_visualization mmp.launch.py world:=seoul
 ```
 
-### Use Custom TIF File
-
-You can specify a custom path via parameters:
+### Run Node Directly
 
 ```bash
-ros2 run mmp_terrain terrain_publisher --ros-args -p tif_path:=/path/to/custom.tif
+# Default world (dokdo)
+ros2 run mmp_terrain terrain_publisher
+
+# Specify different world
+ros2 run mmp_terrain terrain_publisher --ros-args -p world:=korea
 ```
 
 ## Published Topics
@@ -86,6 +93,22 @@ TARGET_SCALE = 10           # Downsampling ratio
 Data has not been downloaded. Run:
 ```bash
 python3 scripts/download_terrain_data.py korea
+```
+
+### Build error: "can't copy data/xxx.tif: doesn't exist"
+
+This happens when you delete/add `.tif` files in the `data/` directory. The build system caches the old file list.
+
+**Solution:** Clean the build cache and rebuild:
+```bash
+rm -rf build/mmp_terrain install/mmp_terrain
+colcon build --packages-select mmp_terrain
+```
+
+Or clean the entire workspace:
+```bash
+rm -rf build install
+colcon build
 ```
 
 ### Download script fails

@@ -10,7 +10,16 @@ def generate_launch_description():
     pkg_share = get_package_share_directory('mmp_visualization')
     rviz_config_file = os.path.join(pkg_share, 'rviz', 'mmp.rviz')
 
+    # Declare launch argument for world name
+    world_arg = DeclareLaunchArgument(
+        'world',
+        default_value='dokdo',
+        description='World name (tif file name without extension in data directory)'
+    )
+
     return LaunchDescription([
+        world_arg,
+
         # Terrain publisher node
         Node(
             package='mmp_terrain',
@@ -18,7 +27,7 @@ def generate_launch_description():
             name='terrain_publisher',
             output='screen',
             parameters=[
-                # {'tif_path': '/custom/path/to/terrain.tif'}  # Optional override
+                {'world': LaunchConfiguration('world')}
             ]
         ),
 
