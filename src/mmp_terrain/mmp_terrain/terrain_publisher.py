@@ -11,8 +11,7 @@ import os
 
 
 TARGET_CELL_SIZE_M = 500.0
-TARGET_SCALE = 10
-
+TARGET_SCALE = 3
 
 class TerrainPublisher(Node):
     def __init__(self):
@@ -84,15 +83,14 @@ class TerrainPublisher(Node):
         scale = TARGET_SCALE
         elevation = elevation[::scale, ::scale]
 
-        elevation = np.where(elevation < -9000, np.nan, elevation)
-        elevation = np.where(elevation <= 0, np.nan, elevation)
-        elevation = elevation.astype(np.float32)
+        elevation_raw = np.where(elevation < -9000, np.nan, elevation).astype(np.float32)
+        elevation = np.where(elevation_raw <= 0, np.nan, elevation_raw)
 
-        valid_rows = np.where(~np.all(np.isnan(elevation), axis=1))[0]
-        valid_cols = np.where(~np.all(np.isnan(elevation), axis=0))[0]
-        row_min, row_max = valid_rows[0], valid_rows[-1] + 1
-        col_min, col_max = valid_cols[0], valid_cols[-1] + 1
-        elevation = elevation[row_min:row_max, col_min:col_max]
+        # valid_rows = np.where(~np.all(np.isnan(elevation), axis=1))[0]
+        # valid_cols = np.where(~np.all(np.isnan(elevation), axis=0))[0]
+        # row_min, row_max = valid_rows[0], valid_rows[-1] + 1
+        # col_min, col_max = valid_cols[0], valid_cols[-1] + 1
+        # elevation = elevation[row_min:row_max, col_min:col_max]
 
         rows, cols = elevation.shape
         self.get_logger().info(f'Cropped shape: {rows} x {cols}')
@@ -102,6 +100,14 @@ class TerrainPublisher(Node):
         actual_cell_size = resolution_m * scale
         scale_factor = actual_cell_size / TARGET_CELL_SIZE_M
         self.get_logger().info(f'Actual cell size: {actual_cell_size:.1f}m | Target cell size: {TARGET_CELL_SIZE_M}m | Scale factor: {scale_factor:.4f}')
+        self.get_logger().info('Calculating hillshade...')
+        hillshade = self.calculate_hillshade(elevation, actual_cell_size)
+        self.get_logger().info(f'Hillshade range: {np.nanmin(hillshade):.2f} ~ {np.nanmax(hillshade):.2f}')
+
+        self.get_logger().info('Creating water layer with depth gradient...')
+        water = self.create_water_layer(elevation_raw, actual_cell_size)
+        water_count = np.sum(~np.isnan(water))
+        self.get_logger().info(f'Water cells: {water_count}')
 
         msg = GridMap()
         msg.header = Header()
@@ -117,19 +123,60 @@ class TerrainPublisher(Node):
         self.get_logger().info(f'Map size (grid): {cols} x {rows} cells')
         self.get_logger().info(f'Map size (actual): {cols * actual_cell_size / 1000:.1f}km x {rows * actual_cell_size / 1000:.1f}km')
 
-        msg.layers = ['elevation']
+        msg.layers = ['elevation', 'hillshade', 'water']
 
-        elevation = elevation / TARGET_CELL_SIZE_M
-        data = elevation.flatten(order='F').tolist()
+        elevation_scaled = elevation / TARGET_CELL_SIZE_M
+        elevation_data = elevation_scaled.flatten(order='F').tolist()
 
-        layer = Float32MultiArray()
-        layer.layout.dim.append(MultiArrayDimension(label='column_index', size=cols, stride=cols * rows))
-        layer.layout.dim.append(MultiArrayDimension(label='row_index', size=rows, stride=rows))
-        layer.data = data
-        msg.data = [layer]
+        elevation_layer = Float32MultiArray()
+        elevation_layer.layout.dim.append(MultiArrayDimension(label='column_index', size=cols, stride=cols * rows))
+        elevation_layer.layout.dim.append(MultiArrayDimension(label='row_index', size=rows, stride=rows))
+        elevation_layer.data = elevation_data
 
-        self.get_logger().info(f'GridMap created: {len(data)} data points')
+        hillshade_data = hillshade.flatten(order='F').tolist()
+
+        hillshade_layer = Float32MultiArray()
+        hillshade_layer.layout.dim.append(MultiArrayDimension(label='column_index', size=cols, stride=cols * rows))
+        hillshade_layer.layout.dim.append(MultiArrayDimension(label='row_index', size=rows, stride=rows))
+        hillshade_layer.data = hillshade_data
+
+        water_data = water.flatten(order='F').tolist()
+
+        water_layer = Float32MultiArray()
+        water_layer.layout.dim.append(MultiArrayDimension(label='column_index', size=cols, stride=cols * rows))
+        water_layer.layout.dim.append(MultiArrayDimension(label='row_index', size=rows, stride=rows))
+        water_layer.data = water_data
+
+        msg.data = [elevation_layer, hillshade_layer, water_layer]
+
+        self.get_logger().info(f'GridMap created: {len(elevation_data)} data points, 3 layers (elevation, hillshade, water)')
         return msg
+
+    def create_water_layer(self, elevation_raw, cell_size):
+        is_water = elevation_raw <= 0
+        water = np.where(is_water, 0.5, np.nan)
+
+        return water.astype(np.float32)
+
+    def calculate_hillshade(self, elevation, cell_size, azimuth=315, altitude=45):
+        fy, fx = np.gradient(elevation, cell_size)
+
+        slope = np.arctan(np.sqrt(fx**2 + fy**2))
+        aspect = np.arctan2(-fy, fx)
+
+        azimuth_rad = np.radians(azimuth)
+        altitude_rad = np.radians(altitude)
+
+        hillshade = 255.0 * (
+            (np.cos(altitude_rad) * np.cos(slope)) +
+            (np.sin(altitude_rad) * np.sin(slope) * np.cos(azimuth_rad - aspect))
+        )
+
+        hillshade = np.clip(hillshade, 0, 255)
+
+        hillshade = np.where(np.isnan(elevation), np.nan, hillshade)
+
+        return hillshade.astype(np.float32)
 
 
 def main():

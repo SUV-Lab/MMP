@@ -46,14 +46,52 @@ Visualization Manager:
 
     - Class: grid_map_rviz_plugin/GridMap
       Enabled: true
-      Name: GridMap
+      Name: Water
       Topic:
         Depth: 5
         Durability Policy: Transient Local
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /terrain/grid_map
-      Use Rainbow: true
+      Use Rainbow: false
+      Color Scheme: 0
+      Layer: water
+      Alpha: 0.9
+      Show Grid Lines: false
+      Height Layer: water
+      Height Transformer: GridMapLayer
+      Color Transformer: FlatColor
+      Color Layer: water
+      Color: 0; 0; 128
+      Min Color: 0; 64; 128
+      Max Color: 0; 64; 128
+      Autocompute Intensity Bounds: false
+      Min Intensity: 0.0
+      Max Intensity: 1.0
+      Value: true
+
+    - Class: grid_map_rviz_plugin/GridMap
+      Enabled: true
+      Name: Terrain
+      Topic:
+        Depth: 5
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Reliability Policy: Reliable
+        Value: /terrain/grid_map
+      Use Rainbow: false
+      Color Scheme: 1
+      Layer: elevation
+      Alpha: 1.0
+      Show Grid Lines: false
+      Height Layer: elevation
+      Height Transformer: GridMapLayer
+      Color Transformer: GridMapLayer
+      Color Layer: hillshade
+      Flat Color: 255; 255; 255
+      Min Color: 139; 90; 43
+      Max Color: 255; 255; 255
+      Autocompute Intensity Bounds: true
       Value: true
 
   Enabled: true
