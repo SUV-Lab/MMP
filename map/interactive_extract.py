@@ -282,8 +282,8 @@ def main():
     )
     parser.add_argument(
         '--output-dir',
-        default='.',
-        help='Output directory for extracted files (default: current directory)'
+        default='../src/mmp_terrain/data',
+        help='Output directory for extracted files (default: ../src/mmp_terrain/data)'
     )
 
     args = parser.parse_args()

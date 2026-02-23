@@ -6,46 +6,39 @@ ROS2 기반 지형 시각화 및 경로 계획 시스템
 
 ```
 MMP/
+├── map/                      # 지형 맵 다운로드 및 추출 도구
 ├── src/
 │   ├── mmp_terrain/          # 지형 데이터 로딩 및 퍼블리싱
-│   ├── mmp_visualization/    # RViz 설정 및 시각화
-│   └── map/                  # 지형 맵 추출 도구
+│   └── mmp_visualization/    # RViz 설정 및 시각화
+│   └── mmp_pathplan/         # 경로 계획 알고리즘 (추후 추가)
+│   └── mmp_obstacle/         # 동적 장애물 로딩 및 퍼블리싱 (추후 추가)
 └── README.md
 ```
 
 ## 🚀 빠른 시작
 
-### 1. 지형 데이터 다운로드
+### 1. SRTM 원본 데이터 다운로드
 
-MMP는 SRTM 기반 고해상도 지형 데이터를 사용합니다. 먼저 [GitHub Releases](https://github.com/limgyeonghun/MMP/releases)에서 `merged.tif`를 다운로드하세요.
-(https://github.com/limgyeonghun/MMP/releases/download/terrain-data/merged.tif)
+먼저 한반도 전체 SRTM 데이터를 다운로드합니다:
 
 ```bash
-cd src/map/
-# merged.tif를 이 디렉토리에 다운로드
+python3 map/download_terrain_data.py merged
 ```
+
+데이터는 자동으로 `map/merged.tif`에 저장됩니다.
 
 ### 2. 원하는 지역 추출
 
 인터랙티브 GUI 도구를 사용해서 원하는 영역을 추출합니다:
 
 ```bash
-cd src/map/
-python3 interactive_extract.py --output-dir ../mmp_terrain/data/
+cd map/
+python3 interactive_extract.py
 ```
 
-또는 CLI로 직접 추출:
+추출된 데이터는 `src/mmp_terrain/data/`에 저장됩니다.
 
-```bash
-python3 extract_center.py \
-  --input merged.tif \
-  --output ../mmp_terrain/data/extract_world.tif \
-  --lat 37.5 \
-  --lon 127.5 \
-  --size 0.8
-```
-
-자세한 사용법은 [src/map/README.md](src/map/README.md)를 참조하세요.
+자세한 사용법은 [map/README.md](map/README.md)를 참조하세요.
 
 ### 3. ROS2 빌드 (Docker 환경)
 
@@ -56,7 +49,11 @@ python3 extract_center.py \
 ### 4. 실행
 
 ```bash
+# 기본 월드 (dokdo)
 ros2 launch mmp_visualization mmp.launch.py
+
+# 다른 월드 지정
+ros2 launch mmp_visualization mmp.launch.py world:=korea
 ```
 
 ## 🐳 Docker 환경 (추가 예정)

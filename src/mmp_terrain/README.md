@@ -12,24 +12,25 @@ pip3 install rasterio numpy
 
 ### 2. Download Terrain Data
 
+From the MMP root directory:
+
 ```bash
-cd src/mmp_terrain
-python3 scripts/download_terrain_data.py korea
+python3 map/download_terrain_data.py korea
 ```
 
 Check available datasets:
 ```bash
-python3 scripts/download_terrain_data.py list
+python3 map/download_terrain_data.py list
 ```
 
 Check installed data:
 ```bash
-python3 scripts/download_terrain_data.py check
+python3 map/download_terrain_data.py check
 ```
 
 Download all datasets:
 ```bash
-python3 scripts/download_terrain_data.py all
+python3 map/download_terrain_data.py all
 ```
 
 ### 3. Git LFS (Optional)
@@ -90,9 +91,9 @@ TARGET_SCALE = 10           # Downsampling ratio
 
 ### "Terrain data file not found" error
 
-Data has not been downloaded. Run:
+Data has not been downloaded. From the MMP root directory, run:
 ```bash
-python3 scripts/download_terrain_data.py korea
+python3 map/download_terrain_data.py korea
 ```
 
 ### Build error: "can't copy data/xxx.tif: doesn't exist"
@@ -113,7 +114,7 @@ colcon build
 
 ### Download script fails
 
-The actual download URL might not be set in the `TERRAIN_DATA` dictionary inside `scripts/download_terrain_data.py`.
+The actual download URL might not be set in the `TERRAIN_DATA` dictionary inside `map/download_terrain_data.py`.
 
 To manually use an existing file:
 ```bash

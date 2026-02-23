@@ -12,37 +12,30 @@ from pathlib import Path
 
 
 # Terrain data registry
-# 나중에 여러 지역/해상도 추가 가능
 TERRAIN_DATA = {
-    'korea': {
-        'filename': 'korea.tif',
-        'description': 'Korean Peninsula - Full coverage (low resolution)',
-        'url': 'https://github.com/limgyeonghun/MMP/releases/download/terrain-data-v1.0/korea.tif',
-        # 실제 파일의 SHA256 해시값 (무결성 검증용)
-        'sha256': 'ad72a1c0c92c2adca3da39a21888fdfeb14bc5f271fb55a569a85df18a2fb5dc',
-        'size_mb': 176,
-    },
-    # 향후 추가 가능한 데이터셋 예시:
-    # 'korea_central_hires': {
-    #     'filename': 'korea_central_10m.tif',
-    #     'description': 'Central Korea - High resolution (10m)',
-    #     'url': '...',
-    #     'sha256': '...',
-    #     'size_mb': 500,
-    # },
+    'merged': {
+        'filename': 'merged.tif',
+        'description': 'Korean Peninsula - Full SRTM data for extraction',
+        'url': 'https://github.com/limgyeonghun/MMP/releases/download/terrain-data/merged.tif',
+        'sha256': '9d61f73cedb1ebaa73f139cc552a4ec78095d39803e74ad408bb4cbbc790d9c1',  # TODO: Add checksum after uploading
+        'size_mb': 618,  # Approximate size
+        'save_to_map': True,  # Save to map/ directory instead of data/
+    }
 }
 
-
-def get_data_directory():
-    """데이터 저장 디렉토리 경로 반환"""
+def get_data_directory(save_to_map=False):
     script_dir = Path(__file__).parent
-    data_dir = script_dir.parent / 'data'
+
+    if save_to_map:
+        data_dir = script_dir
+    else:
+        data_dir = script_dir / 'src' / 'mmp_terrain' / 'data'
+
     data_dir.mkdir(parents=True, exist_ok=True)
     return data_dir
 
 
 def calculate_sha256(filepath):
-    """파일의 SHA256 해시값 계산"""
     sha256_hash = hashlib.sha256()
     with open(filepath, "rb") as f:
         for byte_block in iter(lambda: f.read(4096), b""):
@@ -51,7 +44,6 @@ def calculate_sha256(filepath):
 
 
 def verify_file(filepath, expected_hash):
-    """파일 무결성 검증"""
     if expected_hash is None:
         print(f"  ⚠️  Warning: No checksum available for verification")
         return True
@@ -70,7 +62,6 @@ def verify_file(filepath, expected_hash):
 
 
 def download_file(url, dest_path, expected_size_mb=None):
-    """파일 다운로드 (진행률 표시)"""
     print(f"  Downloading from: {url}")
     print(f"  Destination: {dest_path}")
 
@@ -84,7 +75,7 @@ def download_file(url, dest_path, expected_size_mb=None):
 
     try:
         urllib.request.urlretrieve(url, dest_path, reporthook=report_progress)
-        print()  # 줄바꿈
+        print()
         return True
     except Exception as e:
         print(f"\n  ✗ Download failed: {e}")
@@ -92,14 +83,14 @@ def download_file(url, dest_path, expected_size_mb=None):
 
 
 def download_terrain(region_key):
-    """특정 지역의 terrain 데이터 다운로드"""
     if region_key not in TERRAIN_DATA:
         print(f"Error: Unknown region '{region_key}'")
         print(f"Available regions: {', '.join(TERRAIN_DATA.keys())}")
         return False
 
     data_info = TERRAIN_DATA[region_key]
-    data_dir = get_data_directory()
+    save_to_map = data_info.get('save_to_map', False)
+    data_dir = get_data_directory(save_to_map)
     dest_path = data_dir / data_info['filename']
 
     print(f"\n{'='*60}")
@@ -108,11 +99,9 @@ def download_terrain(region_key):
     print(f"Size: ~{data_info['size_mb']} MB")
     print(f"{'='*60}\n")
 
-    # 이미 파일이 있는지 확인
     if dest_path.exists():
         print(f"  File already exists: {dest_path}")
 
-        # 해시값 검증
         if data_info['sha256']:
             if verify_file(dest_path, data_info['sha256']):
                 print(f"  ✓ File is valid, skipping download")
@@ -127,11 +116,9 @@ def download_terrain(region_key):
                 return True
             dest_path.unlink()
 
-    # 다운로드 실행
     if not download_file(data_info['url'], dest_path, data_info['size_mb']):
         return False
 
-    # 무결성 검증
     if not verify_file(dest_path, data_info['sha256']):
         print(f"  Removing corrupted file...")
         dest_path.unlink()
@@ -142,7 +129,6 @@ def download_terrain(region_key):
 
 
 def list_available_data():
-    """사용 가능한 terrain 데이터 목록 출력"""
     print("\nAvailable terrain datasets:")
     print("=" * 60)
 
@@ -156,15 +142,15 @@ def list_available_data():
 
 
 def check_installed_data():
-    """설치된 terrain 데이터 확인"""
-    data_dir = get_data_directory()
-
     print("\nInstalled terrain data:")
     print("=" * 60)
 
     found_any = False
     for key, info in TERRAIN_DATA.items():
+        save_to_map = info.get('save_to_map', False)
+        data_dir = get_data_directory(save_to_map)
         filepath = data_dir / info['filename']
+
         if filepath.exists():
             size_mb = filepath.stat().st_size / (1024 * 1024)
             print(f"\n  ✓ {key}")
@@ -180,18 +166,9 @@ def check_installed_data():
 
 
 def main():
-    """메인 함수"""
+    # 인자 없으면 merged 다운로드 (기본 동작)
     if len(sys.argv) < 2:
-        print("Usage: python3 download_terrain_data.py <command>")
-        print("\nCommands:")
-        print("  all           - Download all available terrain data")
-        print("  list          - List available terrain datasets")
-        print("  check         - Check installed terrain data")
-        print("  <region>      - Download specific region (e.g., 'korea')")
-        print("\nExamples:")
-        print("  python3 download_terrain_data.py korea")
-        print("  python3 download_terrain_data.py all")
-        return 1
+        return 0 if download_terrain('merged') else 1
 
     command = sys.argv[1]
 
@@ -203,21 +180,12 @@ def main():
         check_installed_data()
         return 0
 
-    elif command == 'all':
-        print("Downloading all terrain datasets...")
-        success = True
-        for region_key in TERRAIN_DATA.keys():
-            if not download_terrain(region_key):
-                success = False
-        return 0 if success else 1
-
     else:
-        # 특정 지역 다운로드
+        # 특정 데이터셋 다운로드
         if download_terrain(command):
             return 0
         else:
             return 1
-
 
 if __name__ == '__main__':
     sys.exit(main())

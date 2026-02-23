@@ -15,4 +15,5 @@ src/mmp_terrain/data/*.tif
 
 # Map extraction scripts - keep scripts, ignore TIF files
 src/map/*.tif
+map/*.tif
 src/map/extra/
