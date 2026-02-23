@@ -151,7 +151,7 @@ class TerrainPublisher(Node):
 
     def create_water_layer(self, elevation_raw, cell_size):
         is_water = elevation_raw <= 0
-        water = np.where(is_water, 0.5, np.nan)
+        water = np.where(is_water, 0.0, np.nan)
 
         return water.astype(np.float32)
 
