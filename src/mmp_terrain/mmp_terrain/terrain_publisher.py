@@ -6,6 +6,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 from grid_map_msgs.msg import GridMap
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension, Header
+from std_srvs.srv import Trigger
 from ament_index_python.packages import get_package_share_directory
 import os
 
@@ -26,6 +27,14 @@ class TerrainPublisher(Node):
         self.pub = self.create_publisher(GridMap, '/terrain/grid_map', qos)
         self.get_logger().info('Publisher created on /terrain/grid_map with TRANSIENT_LOCAL QoS')
 
+        # Create service for changing maps
+        self.change_map_srv = self.create_service(
+            Trigger,
+            '/terrain/change_map',
+            self.change_map_callback
+        )
+        self.get_logger().info('Service created on /terrain/change_map')
+
         self.get_logger().info('Loading terrain data...')
         grid_map = self.load_tif()
 
@@ -33,9 +42,30 @@ class TerrainPublisher(Node):
         self.get_logger().info('Terrain GridMap published successfully')
         self.get_logger().info('Node will keep running to serve TRANSIENT_LOCAL subscribers')
 
+    def change_map_callback(self, request, response):
+        """Service callback to reload map with current parameter"""
+        try:
+            self.get_logger().info('Received map change request')
+            world_name = self.get_parameter('world').get_parameter_value().string_value
+            self.get_logger().info(f'Reloading map: {world_name}')
+
+            grid_map = self.load_tif()
+            self.pub.publish(grid_map)
+
+            response.success = True
+            response.message = f'Successfully loaded map: {world_name}'
+            self.get_logger().info(response.message)
+        except Exception as e:
+            response.success = False
+            response.message = f'Failed to load map: {str(e)}'
+            self.get_logger().error(response.message)
+
+        return response
+
     def load_tif(self):
         """TIF -> GridMap msg"""
-        self.declare_parameter('world', 'dokdo')
+        if not self.has_parameter('world'):
+            self.declare_parameter('world', 'dokdo')
         world_name = self.get_parameter('world').get_parameter_value().string_value
 
         pkg_share = get_package_share_directory('mmp_terrain')

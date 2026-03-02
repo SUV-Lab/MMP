@@ -21,6 +21,8 @@ Panels:
       - /Current View1
     Name: Views
     Splitter Ratio: 0.5
+  - Class: mmp_rviz_plugins/MapSelector
+    Name: MMP Control
 
 Visualization Manager:
   Class: ""

@@ -1,0 +1,9 @@
+<library path="mmp_rviz_plugins">
+  <class name="mmp_rviz_plugins/MapSelector"
+         type="mmp_rviz_plugins::MapSelectorPanel"
+         base_class_type="rviz_common::Panel">
+    <description>
+      Panel for selecting and loading different terrain maps in MMP project
+    </description>
+  </class>
+</library>
