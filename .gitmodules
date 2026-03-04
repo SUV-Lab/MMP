@@ -1,0 +1,4 @@
+[submodule "src/mmp_path_planning"]
+	path = src/mmp_path_planning
+	url = https://github.com/limgyeonghun/swarm-formation.git
+	branch = mmp
