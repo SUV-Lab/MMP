@@ -1,4 +1,4 @@
-# MMP (Multi-Modal Planning)
+# MMP (Missile Mission Planning)
 
 ROS2 기반 지형 시각화 및 경로 계획 시스템
 
@@ -9,9 +9,9 @@ MMP/
 ├── map/                      # 지형 맵 다운로드 및 추출 도구
 ├── src/
 │   ├── mmp_terrain/          # 지형 데이터 로딩 및 퍼블리싱
-│   └── mmp_visualization/    # RViz 설정 및 시각화
-│   └── mmp_pathplan/         # 경로 계획 알고리즘 (추후 추가)
-│   └── mmp_obstacle/         # 동적 장애물 로딩 및 퍼블리싱 (추후 추가)
+│   └── mmp_visualization/    # Rviz 설정 및 시각화
+│   └── mmp_path_planning/    # 경로 계획 알고리즘
+│   └── mmp_rviz_plugins/     # Rviz custom ui  
 └── README.md
 ```
 
@@ -60,16 +60,3 @@ ros2 launch mmp_visualization mmp.launch.py world:=korea
 
 프로젝트는 Docker 컨테이너 내에서 실행됩니다:
 
-## 📐 좌표 참고
-
-한반도 주요 지역:
-
-| 지역 | 위도 | 경도 | 추천 크기 |
-|------|------|------|-----------|
-| 서울 | 37.5°N | 127.0°E | 0.5° |
-| DMZ (강원 북부) | 38.4°N | 128.0°E | 0.8° |
-| 부산 | 35.1°N | 129.0°E | 0.5° |
-| 제주도 | 33.5°N | 126.5°E | 0.8° |
-| 서해 중부 | 36.5°N | 124.0°E | 5.0° |
-
-크기 참고: 1° ≈ 111km
