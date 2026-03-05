@@ -13,6 +13,8 @@ find_package(rviz_rendering REQUIRED)
 find_package(rviz_default_plugins REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(formation_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
 set(CMAKE_AUTOMOC ON)
@@ -25,14 +27,18 @@ include_directories(
   ${Qt5Widgets_INCLUDE_DIRS}
 )
 
-# Generate moc file for the header
+# Generate moc file for the headers
 qt5_wrap_cpp(MOC_FILES
   include/mmp_rviz_plugins/map_selector_panel.hpp
+  include/mmp_rviz_plugins/trajectory_command_panel.hpp
+  include/mmp_rviz_plugins/point_picker_tool.hpp
 )
 
-# Map selector panel library
+# RViz panels and tools library
 add_library(${PROJECT_NAME} SHARED
   src/map_selector_panel.cpp
+  src/trajectory_command_panel.cpp
+  src/point_picker_tool.cpp
   ${MOC_FILES}
 )
 
@@ -43,6 +49,8 @@ ament_target_dependencies(${PROJECT_NAME}
   rviz_default_plugins
   pluginlib
   std_srvs
+  formation_msgs
+  geometry_msgs
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -79,6 +87,8 @@ ament_export_dependencies(
   rviz_default_plugins
   pluginlib
   std_srvs
+  formation_msgs
+  geometry_msgs
   Qt5
 )
 

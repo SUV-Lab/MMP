@@ -6,4 +6,20 @@
       Panel for selecting and loading different terrain maps in MMP project
     </description>
   </class>
+
+  <class name="mmp_rviz_plugins/TrajectoryCommand"
+         type="mmp_rviz_plugins::TrajectoryCommandPanel"
+         base_class_type="rviz_common::Panel">
+    <description>
+      Panel for setting start/goal points and publishing trajectory commands
+    </description>
+  </class>
+
+  <class name="mmp_rviz_plugins/PointPicker"
+         type="mmp_rviz_plugins::PointPickerTool"
+         base_class_type="rviz_common::Tool">
+    <description>
+      Tool for picking points on the ground plane (z=0) anywhere in the viewport
+    </description>
+  </class>
 </library>
